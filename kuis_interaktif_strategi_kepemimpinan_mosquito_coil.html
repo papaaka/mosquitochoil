@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif - Strategi Kepemimpinan Mosquito Coil</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Tone.js untuk efek suara interaktif tanpa file eksternal -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        spiral: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        amberGold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Animasi halus dan gaya khusus */
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spinSlow 24s linear infinite;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-emerald-200 selection:text-emerald-900">
+
+    <!-- Notifikasi / Toast Message Box (Pengganti alert) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 no-print">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- Ilustrasi SVG Spiral Mosquito Coil -->
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-sm">
+                    <svg class="w-6 h-6 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                        <path d="M12 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8c0-5.5 4.5-10 10-10"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-slate-900 text-sm sm:text-base leading-tight">Mosquito Coil Strategy</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Asesmen & Refleksi Kepemimpinan Sekolah</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="sound-toggle" onclick="toggleSound()" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" title="Aktifkan/Matikan Efek Suara">
+                    <i data-lucide="volume-2" id="sound-icon" class="w-5 h-5"></i>
+                </button>
+                <div id="user-badge" class="hidden items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                    <i data-lucide="user-check" class="w-4 h-4 text-emerald-600"></i>
+                    <span id="header-user-name" class="text-xs font-semibold text-emerald-800 truncate max-w-[120px] sm:max-w-[180px]">Peserta</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+        <!-- =====================================================================
+             HALAMAN 1: IDENTITAS & PETUNJUK PENGERJAAN
+             ===================================================================== -->
+        <section id="page-intro" class="fade-in space-y-6">
+            <!-- Hero Card -->
+            <div class="bg-gradient-to-br from-emerald-800 via-teal-800 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+                <!-- Dekorasi Spiral Latar -->
+                <svg class="absolute -right-12 -bottom-12 w-64 h-64 text-white/10 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3">
+                    <path d="M50 50 m 0 0 a 5 5 0 0 1 10 0 a 10 10 0 0 1 -20 0 a 15 15 0 0 1 30 0 a 20 20 0 0 1 -40 0 a 25 25 0 0 1 50 0 a 30 30 0 0 1 -60 0 a 35 35 0 0 1 70 0 a 40 40 0 0 1 -80 0" stroke-linecap="round"/>
+                </svg>
+
+                <div class="relative z-10 max-w-2xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-semibold mb-4">
+                        <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                        E-Book Karya Tri Handayani
+                    </span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 leading-tight">
+                        Kuis Strategi Kepemimpinan <span class="text-amber-400">Mosquito Coil</span>
+                    </h2>
+                    <p class="text-emerald-100/90 text-sm sm:text-base leading-relaxed">
+                        Uji pemahaman Anda mengenai 10 tahapan spiral kepemimpinan berkelanjutan, landasan teori, serta implementasi manajerial dalam meningkatkan mutu pendidikan di sekolah dasar.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <!-- Kolom Petunjuk (7 Kolom) -->
+                <div class="md:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-5">
+                    <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                            <i data-lucide="info" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-lg text-slate-900">Petunjuk Pengerjaan</h3>
+                            <p class="text-xs text-slate-500">Bacalah panduan berikut sebelum memulai sesi</p>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-3.5 text-sm text-slate-600">
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                            <span>Kuis terdiri dari <strong>20 soal pilihan ganda</strong> yang mencakup konsep dasar, landasan teori, dan 10 tahapan Strategi <em>Mosquito Coil</em>.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                            <span>Setiap jawaban yang Anda pilih akan langsung menampilkan <strong>konfirmasi dan pembahasan ringkas</strong> berdasarkan materi e-book.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                            <span>Anda dapat berpindah antar soal dengan bebas melalui tombol navigasi atau peta nomor soal sebelum menyelesaikan kuis.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
+                            <span>Di akhir sesi, Anda akan memperoleh <strong>skor akhir, sertifikat apresiasi, dan lembar refleksi kepemimpinan</strong> yang dapat diunduh/dicetak.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Kolom Form Identitas (5 Kolom) -->
+                <div class="md:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <div class="space-y-5">
+                        <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display font-bold text-lg text-slate-900">Identitas Peserta</h3>
+                                <p class="text-xs text-slate-500">Digunakan untuk sertifikat & refleksi</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label for="input-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Nama Lengkap & Gelar <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" id="input-name" placeholder="Contoh: Drs. Budi Santoso, M.Pd." 
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 outline-none text-sm transition-all"
+                                    onkeypress="if(event.key === 'Enter') startQuiz()">
+                            </div>
+
+                            <div>
+                                <label for="input-school" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Unit Kerja / Nama Sekolah <span class="text-slate-400 font-normal">(Opsional)</span>
+                                </label>
+                                <input type="text" id="input-school" placeholder="Contoh: SD Negeri 01 Rejang Lebong" 
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 outline-none text-sm transition-all"
+                                    onkeypress="if(event.key === 'Enter') startQuiz()">
+                            </div>
+
+                            <div>
+                                <label for="input-role" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                    Peran / Jabatan
+                                </label>
+                                <select id="input-role" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 outline-none text-sm bg-white transition-all">
+                                    <option value="Kepala Sekolah">Kepala Sekolah</option>
+                                    <option value="Calon Kepala Sekolah">Calon Kepala Sekolah</option>
+                                    <option value="Guru / Pendidik">Guru / Pendidik</option>
+                                    <option value="Pengawas / Praktisi Pendidikan">Pengawas / Praktisi Pendidikan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="startQuiz()" class="mt-6 w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-display font-bold text-sm sm:text-base shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                        <span>Mulai Mengerjakan Kuis</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             HALAMAN 2: ARENA KUIS INTERAKTIF
+             ===================================================================== -->
+        <section id="page-quiz" class="hidden fade-in space-y-6">
+            <!-- Progress Bar & Status -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold" id="question-counter">Soal 1 / 20</span>
+                        <span class="text-slate-500 font-medium hidden sm:inline" id="question-topic">Konsep Dasar</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-slate-600 font-medium">Terjawab: <strong id="answered-count" class="text-emerald-600">0</strong>/20</span>
+                        <button onclick="toggleNavGrid()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors">
+                            <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+                            <span>Peta Soal</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Bar Progres -->
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-300" style="width: 5%"></div>
+                </div>
+
+                <!-- Drawer Peta Nomor Soal (Collapsible) -->
+                <div id="nav-grid-container" class="hidden pt-3 border-t border-slate-100">
+                    <p class="text-xs text-slate-500 mb-2 font-medium">Klik nomor untuk melompat ke soal tertentu:</p>
+                    <div id="nav-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2"></div>
+                </div>
+            </div>
+
+            <!-- Kartu Pertanyaan -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-6">
+                <div>
+                    <span class="inline-block text-xs font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full mb-3 sm:hidden" id="question-topic-mobile">Konsep Dasar</span>
+                    <h3 id="question-text" class="font-display text-lg sm:text-xl font-bold text-slate-900 leading-relaxed">
+                        Memuat pertanyaan...
+                    </h3>
+                </div>
+
+                <!-- Pilihan Jawaban -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Opsi di-render via JS -->
+                </div>
+
+                <!-- Kotak Umpan Balik / Pembahasan Langsung -->
+                <div id="feedback-box" class="hidden rounded-2xl p-4 sm:p-5 border text-sm leading-relaxed transition-all">
+                    <div class="flex items-start gap-3">
+                        <div id="feedback-icon" class="mt-0.5 shrink-0"></div>
+                        <div class="space-y-1">
+                            <h4 id="feedback-title" class="font-bold"></h4>
+                            <p id="feedback-explanation" class="text-slate-700"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="flex items-center justify-between gap-4 pt-2">
+                <button id="btn-prev" onclick="prevQuestion()" class="px-5 py-3 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    <span>Sebelumnya</span>
+                </button>
+
+                <button id="btn-next" onclick="nextQuestion()" class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 flex items-center gap-2 transition-all">
+                    <span id="btn-next-text">Selanjutnya</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4" id="btn-next-icon"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             HALAMAN 3: HASIL, APRESIASI & REFLEKSI KEPEMIMPINAN
+             ===================================================================== -->
+        <section id="page-result" class="hidden fade-in space-y-8">
+            
+            <!-- BAGIAN A: SKOR & SERTIFIKAT APRESIASI -->
+            <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-md border border-slate-200/90 print-shadow-none relative overflow-hidden">
+                <!-- Ornamen Sudut -->
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-600 via-amber-400 to-teal-600"></div>
+
+                <div class="text-center max-w-2xl mx-auto space-y-4">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-50 border-4 border-amber-200 text-amber-500 mx-auto shadow-inner">
+                        <i data-lucide="award" class="w-10 h-10"></i>
+                    </div>
+
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-emerald-700">Sertifikat Apresiasi Pembelajaran</span>
+                        <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1" id="res-predicate">Pemimpin Strategis Unggul</h2>
+                    </div>
+
+                    <p class="text-sm text-slate-500">Diberikan sebagai bentuk apresiasi atas partisipasi dan pemahaman dalam mengkaji <strong>Strategi Kepemimpinan Mosquito Coil</strong> kepada:</p>
+
+                    <div class="py-3 px-6 bg-slate-50 rounded-2xl border border-slate-200/80 inline-block min-w-[260px] sm:min-w-[360px]">
+                        <p class="font-display text-xl sm:text-2xl font-bold text-emerald-900" id="res-name">Nama Peserta</p>
+                        <p class="text-xs sm:text-sm text-slate-600 font-medium mt-0.5" id="res-school-role">Jabatan • Nama Sekolah</p>
+                    </div>
+
+                    <!-- Statistik Skor -->
+                    <div class="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto pt-3">
+                        <div class="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-3 sm:p-4">
+                            <p class="text-xs text-emerald-700 font-semibold">Skor Akhir</p>
+                            <p class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-800 mt-1" id="res-score">100</p>
+                        </div>
+                        <div class="bg-teal-50 border border-teal-200/80 rounded-2xl p-3 sm:p-4">
+                            <p class="text-xs text-teal-700 font-semibold">Jawaban Benar</p>
+                            <p class="font-display text-2xl sm:text-3xl font-extrabold text-teal-800 mt-1"><span id="res-correct">20</span><span class="text-sm font-normal text-teal-600">/20</span></p>
+                        </div>
+                        <div class="bg-rose-50 border border-rose-200/80 rounded-2xl p-3 sm:p-4">
+                            <p class="text-xs text-rose-700 font-semibold">Perlu Review</p>
+                            <p class="font-display text-2xl sm:text-3xl font-extrabold text-rose-700 mt-1" id="res-wrong">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Pesan Apresiasi Personal -->
+                    <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 sm:p-5 text-sm text-slate-700 leading-relaxed text-left mt-4">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-amber-500 shrink-0 mt-0.5"></i>
+                            <p id="res-appreciation-msg">
+                                Selamat! Anda telah menunjukkan pemahaman yang luar biasa terhadap siklus kepemimpinan spiral. Teruslah menjadi penggerak perubahan yang adaptif dan kolaboratif di satuan pendidikan Anda.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAGIAN B: LEMBAR REFLEKSI KEPEMIMPINAN (Sesuai Lampiran 2 E-Book) -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 print-shadow-none space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                            <i data-lucide="pen-tool" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-lg sm:text-xl text-slate-900">Lembar Refleksi Kepemimpinan</h3>
+                            <p class="text-xs text-slate-500">Adaptasi Lampiran 2 E-Book: Rencana Tindak Lanjut Praktik Kepemimpinan</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-medium text-slate-400" id="reflection-date"></span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Pertanyaan Refleksi 1 -->
+                    <div class="space-y-2">
+                        <label for="ref-stage" class="block text-sm font-semibold text-slate-800">
+                            1. Tahapan strategi mana yang paling mendesak diterapkan di sekolah Anda saat ini?
+                        </label>
+                        <select id="ref-stage" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 outline-none text-sm bg-white">
+                            <option value="Tahap 1: Membangun Visi & Misi Partisipatif">Tahap 1: Membangun Visi & Misi Partisipatif</option>
+                            <option value="Tahap 2: Analisis Kebutuhan Sekolah">Tahap 2: Analisis Kebutuhan Sekolah</option>
+                            <option value="Tahap 3: Perencanaan Program Berbasis Data">Tahap 3: Perencanaan Program Berbasis Data</option>
+                            <option value="Tahap 4: Pengorganisasian Sumber Daya Sekolah">Tahap 4: Pengorganisasian Sumber Daya Sekolah</option>
+                            <option value="Tahap 5: Implementasi Program Sekolah">Tahap 5: Implementasi Program Sekolah</option>
+                            <option value="Tahap 6: Supervisi Akademik">Tahap 6: Supervisi Akademik</option>
+                            <option value="Tahap 7: Evaluasi Kinerja Sekolah">Tahap 7: Evaluasi Kinerja Sekolah</option>
+                            <option value="Tahap 8: Refleksi Kepemimpinan">Tahap 8: Refleksi Kepemimpinan</option>
+                            <option value="Tahap 9: Penguatan Budaya Sekolah & Kemitraan">Tahap 9: Penguatan Budaya Sekolah & Kemitraan</option>
+                            <option value="Tahap 10: Transformasi Manajerial Berbasis Digital">Tahap 10: Transformasi Manajerial Berbasis Digital</option>
+                        </select>
+                    </div>
+
+                    <!-- Pertanyaan Refleksi 2 -->
+                    <div class="space-y-2">
+                        <label for="ref-strength" class="block text-sm font-semibold text-slate-800">
+                            2. Praktik baik/kekuatan apa yang sudah berjalan baik di sekolah Anda?
+                        </label>
+                        <input type="text" id="ref-strength" placeholder="Contoh: Budaya literasi pagi dan kolaborasi guru..." 
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 outline-none text-sm">
+                    </div>
+
+                    <!-- Pertanyaan Refleksi 3 -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label for="ref-action" class="block text-sm font-semibold text-slate-800">
+                            3. Komitmen Perbaikan: Langkah konkret apa yang akan Anda lakukan dalam 3 bulan ke depan?
+                        </label>
+                        <textarea id="ref-action" rows="3" placeholder="Tuliskan rencana aksi nyata yang akan Anda terapkan bersama warga sekolah..." 
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 outline-none text-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Refleksi & Cetak -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 no-print">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <button onclick="copyReflectionSummary()" class="px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-xs sm:text-sm flex items-center gap-2 transition-colors">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>Salin Ringkasan Hasil & Refleksi</span>
+                        </button>
+                        <button onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm flex items-center gap-2 transition-colors">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            <span>Cetak / Simpan PDF</span>
+                        </button>
+                    </div>
+
+                    <button onclick="restartQuiz()" class="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 font-semibold text-xs sm:text-sm flex items-center gap-2 transition-colors">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        <span>Ulangi Kuis</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BAGIAN C: TINJAUAN ULANG JAWABAN (ACCORDION RINGKAS) -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80 no-print space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-slate-900">Tinjauan Jawaban Kuis</h3>
+                        <p class="text-xs text-slate-500">Periksa kembali jawaban Anda beserta rujukan materi e-book</p>
+                    </div>
+                    <button onclick="toggleReviewList()" id="btn-toggle-review" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+                        <span>Tampilkan Detail</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="review-list" class="hidden space-y-3 pt-2"></div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-5 mt-auto no-print">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+            <p>Diadaptasi dari E-Book <strong>"Strategi Kepemimpinan Mosquito Coil"</strong> (Tri Handayani, 2026)</p>
+            <p>Media Evaluasi & Refleksi Kepemimpinan Pendidikan</p>
+        </div>
+    </footer>
+
+    <!-- =====================================================================
+         JAVASCRIPT LOGIC & BANK SOAL (20 PERTANYAAN)
+         ===================================================================== -->
+    <script>
+        // Bank 20 Pertanyaan berdasarkan PDF
+        const quizData = [
+            {
+                topic: "Konsep Dasar Mosquito Coil",
+                question: "Apa analogi utama yang mendasari pengembangan model Strategi Kepemimpinan Mosquito Coil?",
+                options: [
+                    "Roda berputar yang bergerak cepat menuju satu titik akhir",
+                    "Obat nyamuk spiral yang bekerja bertahap, berkesinambungan, dan memberikan perlindungan dari gangguan",
+                    "Piramida hierarki yang membagi tugas secara kaku dari atas ke bawah",
+                    "Jaring laba-laba yang mengikat seluruh komponen sekolah secara statis"
+                ],
+                correct: 1,
+                explanation: "Istilah Mosquito Coil diambil dari analogi obat nyamuk berbentuk spiral yang bekerja secara perlahan namun terus-menerus hingga memberikan perlindungan dari berbagai gangguan/hambatan di sekolah."
+            },
+            {
+                topic: "Filosofi Spiral Kepemimpinan",
+                question: "Dalam konteks kepemimpinan sekolah, apa makna dari bentuk spiral pada model Mosquito Coil?",
+                options: [
+                    "Proses kepemimpinan yang bersifat linier dan selesai dalam satu kali kegiatan",
+                    "Proses kepemimpinan yang berfokus hanya pada penyelesaian tugas administratif",
+                    "Proses kepemimpinan yang berlangsung bertahap, berulang, saling terhubung, dan membentuk siklus perbaikan berkelanjutan",
+                    "Proses pengambilan keputusan yang sepenuhnya berada di tangan kepala sekolah"
+                ],
+                correct: 2,
+                explanation: "Bentuk spiral menggambarkan proses kepemimpinan yang tidak bersifat linier atau sekali selesai, melainkan siklis, bertahap, saling terhubung, dan terus berkembang ke kualitas yang lebih baik."
+            },
+            {
+                topic: "Pengembangan Tahapan Strategi",
+                question: "Berapa jumlah tahapan Strategi Mosquito Coil setelah dilakukan pengembangan dari model awalnya?",
+                options: [
+                    "5 tahapan",
+                    "7 tahapan",
+                    "8 tahapan",
+                    "10 tahapan"
+                ],
+                correct: 3,
+                explanation: "Pada Bab IV dijelaskan bahwa sebelum dilakukan pengembangan terdapat 7 tahapan, dan setelah dikembangkan menjadi 10 tahapan strategi yang saling berkaitan."
+            },
+            {
+                topic: "Landasan Teori Kepemimpinan",
+                question: "Teori kepemimpinan manakah yang menekankan kemampuan pemimpin dalam menginspirasi, memotivasi, dan membangun visi bersama sebagai agen perubahan?",
+                options: [
+                    "Kepemimpinan Instruksional",
+                    "Kepemimpinan Transformasional",
+                    "Kepemimpinan Digital",
+                    "Kepemimpinan Situasional"
+                ],
+                correct: 1,
+                explanation: "Kepemimpinan transformasional (Hallinger & Wang, 2023; Leithwood, 2024) menekankan kemampuan pemimpin menginspirasi, memotivasi, membangun visi bersama, dan menjadi agen perubahan."
+            },
+            {
+                topic: "Landasan Teori Kepemimpinan",
+                question: "Pada tahapan apa prinsip Kepemimpinan Instruksional paling terlihat dalam model Mosquito Coil?",
+                options: [
+                    "Perumusan visi dan pengorganisasian sumber daya",
+                    "Supervisi akademik dan evaluasi kinerja",
+                    "Transformasi manajerial dan kepemimpinan digital",
+                    "Analisis kebutuhan dan penguatan kemitraan"
+                ],
+                correct: 1,
+                explanation: "Prinsip kepemimpinan instruksional berfokus pada kualitas pembelajaran di kelas dan tercermin pada tahap supervisi akademik serta evaluasi kinerja."
+            },
+            {
+                topic: "Landasan Teori Kepemimpinan",
+                question: "Apa fokus utama dari pendekatan Kepemimpinan Digital menurut e-book tersebut?",
+                options: [
+                    "Menggantikan seluruh peran guru dengan perangkat teknologi",
+                    "Membeli perangkat keras teknologi sebanyak-banyaknya untuk sekolah",
+                    "Memanfaatkan teknologi untuk meningkatkan efektivitas manajemen, komunikasi, serta mendorong pembelajaran yang produktif dan inovatif",
+                    "Menggunakan media sosial semata-mata untuk promosi sekolah"
+                ],
+                correct: 2,
+                explanation: "Kepemimpinan digital tidak hanya soal perangkat, tetapi kemampuan memanfaatkan teknologi untuk efektivitas manajemen, komunikasi, serta mendorong guru dan siswa belajar secara produktif."
+            },
+            {
+                topic: "Tahap 1: Visi dan Misi",
+                question: "Apa tahapan pertama yang menjadi fondasi sekaligus pusat dari seluruh perencanaan program dalam Strategi Mosquito Coil?",
+                options: [
+                    "Analisis kebutuhan sekolah",
+                    "Perencanaan program berbasis data",
+                    "Membangun visi dan misi sekolah yang kuat dan partisipatif",
+                    "Pengorganisasian sumber daya sekolah"
+                ],
+                correct: 2,
+                explanation: "Tahap 1 adalah Membangun Visi dan Misi Sekolah yang Kuat dan Partisipatif, yang menjadi pusat lingkaran spiral sekaligus fondasi seluruh program."
+            },
+            {
+                topic: "Tahap 1: Visi dan Misi",
+                question: "Bagaimana seharusnya proses penyusunan visi dan misi sekolah dilakukan agar warga sekolah memiliki rasa memiliki (sense of belonging)?",
+                options: [
+                    "Dirumuskan secara sepihak oleh kepala sekolah agar cepat selesai",
+                    "Menyalin visi dan misi dari sekolah lain yang sudah berprestasi",
+                    "Dilakukan secara partisipatif melibatkan guru, tenaga kependidikan, komite sekolah, dan perwakilan orang tua",
+                    "Diserahkan sepenuhnya kepada pengawas sekolah"
+                ],
+                correct: 2,
+                explanation: "Visi sekolah tidak boleh ditentukan sepihak, melainkan melalui lokakarya atau diskusi bersama guru, tendik, komite sekolah, dan perwakilan orang tua agar tumbuh komitmen bersama."
+            },
+            {
+                topic: "Tahap 2: Analisis Kebutuhan",
+                question: "Apa tujuan utama dari Tahap 2 (Analisis Kebutuhan Sekolah)?",
+                options: [
+                    "Memastikan program disusun berdasarkan data dan fakta nyata di lapangan, bukan asumsi semata",
+                    "Menentukan sanksi bagi guru yang memiliki kinerja rendah",
+                    "Menyusun laporan pertanggungjawaban keuangan akhir tahun",
+                    "Membagi jadwal mengajar guru secara merata"
+                ],
+                correct: 0,
+                explanation: "Analisis kebutuhan memastikan setiap strategi berangkat dari data dan fakta nyata (pemetaan kondisi sekolah, kebutuhan siswa, dan kompetensi guru), bukan sekadar asumsi."
+            },
+            {
+                topic: "Tahap 2: Analisis Kebutuhan",
+                question: "Data apa saja yang dikumpulkan dalam tahap analisis kebutuhan dan perencanaan berbasis data?",
+                options: [
+                    "Hanya data nilai ujian akhir siswa",
+                    "Data akademik (nilai hasil belajar, literasi, numerasi) dan data nonakademik (ekstrakurikuler, kedisiplinan, sikap sosial)",
+                    "Hanya data jumlah sarana dan prasarana fisik sekolah",
+                    "Data riwayat pendidikan orang tua siswa"
+                ],
+                correct: 1,
+                explanation: "Sekolah mengumpulkan data akademik (hasil asesmen, literasi, numerasi) maupun nonakademik (keaktifan ekstrakurikuler, kedisiplinan, sikap sosial, seni/olahraga)."
+            },
+            {
+                topic: "Tahap 3: Perencanaan Berbasis Data",
+                question: "Mengapa penentuan skala prioritas sangat penting dalam Tahap 3 (Perencanaan Program Berbasis Data)?",
+                options: [
+                    "Karena tidak semua kebutuhan dapat dipenuhi sekaligus, sehingga sekolah harus memilih program yang paling mendesak dan berdampak besar bagi mutu pembelajaran",
+                    "Agar kepala sekolah dapat mengurangi beban kerja guru secara drastis",
+                    "Supaya anggaran sekolah dapat dihemat sebanyak mungkin tanpa digunakan",
+                    "Karena program prioritas tidak memerlukan indikator keberhasilan"
+                ],
+                correct: 0,
+                explanation: "Keterbatasan sumber daya membuat sekolah tidak bisa memenuhi semua kebutuhan sekaligus, sehingga data dipakai untuk memilih program paling mendesak dan berdampak besar."
+            },
+            {
+                topic: "Tahap 4: Pengorganisasian Sumber Daya",
+                question: "Apa saja yang termasuk ke dalam cakupan 'sumber daya sekolah' pada Tahap 4 (Pengorganisasian Sumber Daya Sekolah)?",
+                options: [
+                    "Hanya guru kelas dan guru mata pelajaran",
+                    "Tenaga pendidik/kependidikan, sarana prasarana, waktu, anggaran, serta dukungan masyarakat dan orang tua",
+                    "Hanya gedung sekolah dan buku perpustakaan",
+                    "Dana BOS dan bantuan pemerintah daerah saja"
+                ],
+                correct: 1,
+                explanation: "Sumber daya sekolah mencakup SDM (guru & tendik), sarana prasarana, waktu, anggaran, serta dukungan dari masyarakat dan orang tua."
+            },
+            {
+                topic: "Tahap 5: Implementasi Program",
+                question: "Mengapa prinsip 'fleksibilitas' diperlukan dalam Tahap 5 (Implementasi Program Sekolah)?",
+                options: [
+                    "Agar program boleh tidak dilaksanakan jika guru merasa lelah",
+                    "Agar jadwal kegiatan dapat diubah sewaktu-waktu tanpa koordinasi",
+                    "Karena dalam praktiknya tidak semua rencana berjalan persis seperti rancangan, sehingga perlu penyesuaian jika muncul kendala di lapangan",
+                    "Supaya kepala sekolah tidak perlu membuat rencana kerja yang baku"
+                ],
+                correct: 2,
+                explanation: "Sikap adaptif dan fleksibel diperlukan agar tujuan utama program tetap tercapai melalui penyesuaian strategi ketika menghadapi kendala nyata di lapangan."
+            },
+            {
+                topic: "Tahap 6: Supervisi Akademik",
+                question: "Apa paradigma utama yang ditekankan dalam pelaksanaan Tahap 6 (Supervisi Akademik)?",
+                options: [
+                    "Mencari-cari kesalahan guru dalam mengajar untuk bahan teguran",
+                    "Bersifat pembinaan profesional dan pendampingan kolaboratif untuk meningkatkan kualitas pembelajaran, bukan sekadar penilaian",
+                    "Kegiatan insidental yang hanya dilakukan jika ada kunjungan pengawas",
+                    "Observasi tertutup tanpa memberikan umpan balik kepada guru"
+                ],
+                correct: 1,
+                explanation: "Supervisi akademik bukan untuk mencari kesalahan atau menilai semata, melainkan pembinaan profesional, observasi, umpan balik konstruktif, dan diskusi reflektif."
+            },
+            {
+                topic: "Tahap 7: Evaluasi Kinerja",
+                question: "Apa manfaat utama dari Tahap 7 (Evaluasi Kinerja Sekolah) bagi budaya organisasi sekolah?",
+                options: [
+                    "Memperkuat budaya akuntabilitas dan transparansi program kepada warga sekolah, orang tua, dan pemangku kebijakan",
+                    "Mengurangi frekuensi rapat evaluasi bersama guru",
+                    "Menentukan guru mana yang harus dimutasi ke sekolah lain",
+                    "Menghentikan seluruh program sekolah pada akhir semester"
+                ],
+                correct: 0,
+                explanation: "Evaluasi kinerja memperkuat budaya akuntabilitas dan transparansi, sehingga meningkatkan kepercayaan serta dukungan dari warga sekolah dan masyarakat."
+            },
+            {
+                topic: "Tahap 8: Refleksi Kepemimpinan",
+                question: "Apa perbedaan mendasar antara Evaluasi Kinerja (Tahap 7) dan Refleksi Kepemimpinan (Tahap 8)?",
+                options: [
+                    "Evaluasi hanya dilakukan oleh siswa, sedangkan refleksi oleh orang tua",
+                    "Evaluasi mengukur capaian dan efektivitas program, sedangkan refleksi menelaah secara mendalam pengalaman kepemimpinan, praktik baik, serta kendala sebagai proses belajar pemimpin",
+                    "Evaluasi dilakukan setiap hari, sedangkan refleksi dilakukan lima tahun sekali",
+                    "Tidak ada perbedaan; keduanya merupakan kegiatan yang sama persis"
+                ],
+                correct: 1,
+                explanation: "Evaluasi menilai capaian dan efektivitas program secara objektif, sementara refleksi menelaah pengalaman kepemimpinan (praktik baik & hambatan) untuk memperkuat kapasitas dan keputusan pemimpin ke depan."
+            },
+            {
+                topic: "Tahap 9: Budaya & Kemitraan",
+                question: "Bagaimana cara mewujudkan budaya sekolah yang kuat pada Tahap 9 (Penguatan Budaya Sekolah dan Kemitraan)?",
+                options: [
+                    "Cukup dengan mencetak aturan sekolah dalam ukuran besar di dinding",
+                    "Mewujudkan nilai-nilai bersama (seperti disiplin, tanggung jawab, kerja sama) melalui kebiasaan positif yang dilakukan secara konsisten sehari-hari",
+                    "Membatasi interaksi antara pihak sekolah dengan orang tua siswa",
+                    "Mewajibkan siswa menghafal seluruh tata tertib sekolah"
+                ],
+                correct: 1,
+                explanation: "Budaya sekolah yang kuat tidak berhenti pada slogan atau aturan tertulis, tetapi diwujudkan melalui kebiasaan positif yang dilakukan konsisten setiap hari."
+            },
+            {
+                topic: "Tahap 9: Budaya & Kemitraan",
+                question: "Apa peran kepala sekolah dalam membangun kemitraan eksternal pada Tahap 9?",
+                options: [
+                    "Menyerahkan sepenuhnya pendanaan sekolah kepada komite sekolah",
+                    "Menjadi penghubung yang menjalin komunikasi dan kolaborasi harmonis antara sekolah dengan orang tua, masyarakat, dan lembaga terkait",
+                    "Menghindari keterlibatan masyarakat agar kebijakan sekolah tidak terganggu",
+                    "Mengadakan kegiatan kemitraan hanya saat perayaan hari besar"
+                ],
+                correct: 1,
+                explanation: "Kepala sekolah berperan sebagai penghubung yang menjalin komunikasi dan kolaborasi harmonis dengan orang tua, masyarakat, dan lembaga lain untuk menciptakan ekosistem pendidikan yang kuat."
+            },
+            {
+                topic: "Tahap 10: Transformasi Digital",
+                question: "Dalam Tahap 10 (Transformasi Manajerial Berbasis Digital dan Inovasi), transformasi digital tidak hanya menyangkut penggunaan perangkat teknologi, tetapi juga mencakup perubahan dalam hal...",
+                options: [
+                    "Cara berpikir, cara bekerja, dan cara memimpin dalam mengelola organisasi sekolah",
+                    "Penggantian seluruh buku cetak dengan gawai pribadi siswa",
+                    "Penghapusan kegiatan tatap muka di ruang kelas",
+                    "Pengurangan jumlah tenaga kependidikan di sekolah"
+                ],
+                correct: 0,
+                explanation: "Transformasi digital dan manajerial menyangkut perubahan pola pikir (cara berpikir), cara bekerja, serta cara memimpin agar organisasi sekolah lebih modern, transparan, dan adaptif."
+            },
+            {
+                topic: "Kesinambungan Siklus Spiral",
+                question: "Apa yang terjadi setelah siklus Strategi Mosquito Coil mencapai tahap ke-10?",
+                options: [
+                    "Proses kepemimpinan berhenti karena seluruh target sekolah telah tercapai",
+                    "Siklus kembali lagi pada penyempurnaan visi, perencanaan, dan program sekolah sehingga terus berkembang ke level kualitas yang lebih baik",
+                    "Kepala sekolah mengganti model kepemimpinan dengan model lain",
+                    "Sekolah membubarkan seluruh tim kerja yang telah dibentuk"
+                ],
+                correct: 1,
+                explanation: "Sesuai filosofi spiral, setelah tahap ke-10 proses kembali lagi pada penyempurnaan visi, perencanaan, dan program sekolah sehingga siklus terus bergerak maju."
+            }
+        ];
+
+        // State Aplikasi
+        let userData = {
+            name: "",
+            school: "",
+            role: ""
+        };
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let soundEnabled = true;
+        let synth = null;
+
+        // Inisialisasi Ikon Lucide
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            const today = new Date().toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
+            document.getElementById('reflection-date').textContent = today;
+        });
+
+        // Inisialisasi Audio Tone.js (tanpa external URL)
+        function initAudio() {
+            if (!synth && typeof Tone !== 'undefined') {
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.01, decay: 0.15, sustain: 0.05, release: 0.3 }
+                }).toDestination();
+                synth.volume.value = -10;
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                if (!synth) return;
+
+                if (type === 'correct') {
+                    synth.triggerAttackRelease(["C5", "E5", "G5"], "16n");
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease(["E4", "Eb4"], "8n");
+                } else if (type === 'click') {
+                    synth.triggerAttackRelease("G4", "32n");
+                } else if (type === 'finish') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("C5", "16n", now);
+                    synth.triggerAttackRelease("E5", "16n", now + 0.1);
+                    synth.triggerAttackRelease("G5", "16n", now + 0.2);
+                    synth.triggerAttackRelease("C6", "8n", now + 0.3);
+                }
+            } catch (e) {
+                // Abaikan jika browser memblokir audio
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            icon.setAttribute('data-lucide', soundEnabled ? 'volume-2' : 'volume-x');
+            lucide.createIcons();
+            showToast(soundEnabled ? "Efek suara diaktifkan" : "Efek suara dimatikan", "info");
+        }
+
+        // Sistem Notifikasi Toast (Pengganti alert)
+        function showToast(message, type = "warning") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const styles = {
+                warning: "bg-amber-600 text-white border-amber-700",
+                success: "bg-emerald-600 text-white border-emerald-700",
+                info: "bg-slate-800 text-white border-slate-900"
+            };
+
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2.5 fade-in ${styles[type] || styles.info}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Mulai Kuis
+        function startQuiz() {
+            const nameInput = document.getElementById('input-name').value.trim();
+            const schoolInput = document.getElementById('input-school').value.trim();
+            const roleInput = document.getElementById('input-role').value;
+
+            if (!nameInput) {
+                showToast("Mohon isi Nama Lengkap Anda terlebih dahulu sebelum memulai kuis.", "warning");
+                document.getElementById('input-name').focus();
+                return;
+            }
+
+            userData = {
+                name: nameInput,
+                school: schoolInput || "Satuan Pendidikan",
+                role: roleInput
+            };
+
+            playSound('click');
+
+            // Update Header Badge
+            document.getElementById('header-user-name').textContent = userData.name;
+            document.getElementById('user-badge').classList.remove('hidden');
+            document.getElementById('user-badge').classList.add('flex');
+
+            // Ganti Halaman
+            document.getElementById('page-intro').classList.add('hidden');
+            document.getElementById('page-quiz').classList.remove('hidden');
+
+            renderNavGrid();
+            renderQuestion(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Peta Nomor Soal
+        function renderNavGrid() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+
+            quizData.forEach((_, idx) => {
+                const btn = document.createElement('button');
+                const isCurrent = idx === currentQuestionIndex;
+                const answer = userAnswers[idx];
+
+                let classes = "h-9 rounded-lg font-bold text-xs transition-all border ";
+                if (isCurrent) {
+                    classes += "ring-2 ring-emerald-500 ring-offset-1 ";
+                }
+
+                if (answer === null) {
+                    classes += "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100";
+                } else if (answer === quizData[idx].correct) {
+                    classes += "bg-emerald-100 border-emerald-300 text-emerald-800";
+                } else {
+                    classes += "bg-rose-100 border-rose-300 text-rose-800";
+                }
+
+                btn.className = classes;
+                btn.textContent = idx + 1;
+                btn.onclick = () => {
+                    playSound('click');
+                    renderQuestion(idx);
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function toggleNavGrid() {
+            const container = document.getElementById('nav-grid-container');
+            container.classList.toggle('hidden');
+        }
+
+        // Render Soal
+        function renderQuestion(index) {
+            currentQuestionIndex = index;
+            const q = quizData[index];
+            const selectedAnswer = userAnswers[index];
+            const letters = ['A', 'B', 'C', 'D'];
+
+            // Update Progres & Header Soal
+            document.getElementById('question-counter').textContent = `Soal ${index + 1} / ${quizData.length}`;
+            document.getElementById('question-topic').textContent = q.topic;
+            document.getElementById('question-topic-mobile').textContent = q.topic;
+            document.getElementById('question-text').textContent = `${index + 1}. ${q.question}`;
+
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            document.getElementById('answered-count').textContent = answeredCount;
+            document.getElementById('progress-bar').style.width = `${((index + 1) / quizData.length) * 100}%`;
+
+            // Render Opsi Jawaban
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((optText, optIdx) => {
+                const btn = document.createElement('button');
+                const isAnswered = selectedAnswer !== null;
+                const isSelected = selectedAnswer === optIdx;
+                const isCorrect = optIdx === q.correct;
+
+                let cardStyle = "w-full text-left p-4 rounded-2xl border-2 transition-all flex items-start gap-3.5 ";
+                let badgeStyle = "w-7 h-7 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 transition-colors ";
+
+                if (!isAnswered) {
+                    cardStyle += "bg-white border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40 cursor-pointer";
+                    badgeStyle += "bg-slate-100 text-slate-700";
+                } else {
+                    btn.disabled = true;
+                    if (isCorrect) {
+                        cardStyle += "bg-emerald-50 border-emerald-500 text-emerald-950";
+                        badgeStyle += "bg-emerald-600 text-white";
+                    } else if (isSelected && !isCorrect) {
+                        cardStyle += "bg-rose-50 border-rose-500 text-rose-950";
+                        badgeStyle += "bg-rose-600 text-white";
+                    } else {
+                        cardStyle += "bg-slate-50/60 border-slate-200/70 text-slate-400 opacity-75";
+                        badgeStyle += "bg-slate-200/70 text-slate-500";
+                    }
+                }
+
+                btn.className = cardStyle;
+                btn.innerHTML = `
+                    <span class="${badgeStyle}">${letters[optIdx]}</span>
+                    <span class="text-sm sm:text-base font-medium leading-snug flex-grow">${optText}</span>
+                    ${isAnswered && isCorrect ? '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5"></i>' : ''}
+                    ${isAnswered && isSelected && !isCorrect ? '<i data-lucide="x-circle" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>' : ''}
+                `;
+
+                if (!isAnswered) {
+                    btn.onclick = () => selectOption(optIdx);
+                }
+
+                optionsContainer.appendChild(btn);
+            });
+
+            // Render Kotak Umpan Balik
+            const feedbackBox = document.getElementById('feedback-box');
+            if (selectedAnswer !== null) {
+                const isCorrect = selectedAnswer === q.correct;
+                feedbackBox.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'bg-rose-50', 'border-rose-200');
+                
+                if (isCorrect) {
+                    feedbackBox.classList.add('bg-emerald-50', 'border-emerald-200');
+                    document.getElementById('feedback-icon').innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`;
+                    document.getElementById('feedback-title').className = "font-bold text-emerald-900";
+                    document.getElementById('feedback-title').textContent = "Tepat Sekali!";
+                } else {
+                    feedbackBox.classList.add('bg-rose-50', 'border-rose-200');
+                    document.getElementById('feedback-icon').innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-600"></i>`;
+                    document.getElementById('feedback-title').className = "font-bold text-rose-900";
+                    document.getElementById('feedback-title').textContent = `Kurang Tepat — Jawaban yang benar adalah ${letters[q.correct]}`;
+                }
+                document.getElementById('feedback-explanation').textContent = q.explanation;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Update Tombol Prev / Next
+            document.getElementById('btn-prev').disabled = index === 0;
+            const btnNextText = document.getElementById('btn-next-text');
+            const btnNextIcon = document.getElementById('btn-next-icon');
+            const btnNext = document.getElementById('btn-next');
+
+            if (index === quizData.length - 1) {
+                btnNextText.textContent = "Selesai & Lihat Hasil";
+                btnNextIcon.setAttribute('data-lucide', 'award');
+                btnNext.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                btnNext.classList.add('bg-amber-500', 'hover:bg-amber-600', 'text-slate-950');
+            } else {
+                btnNextText.textContent = "Selanjutnya";
+                btnNextIcon.setAttribute('data-lucide', 'chevron-right');
+                btnNext.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                btnNext.classList.remove('bg-amber-500', 'hover:bg-amber-600', 'text-slate-950');
+            }
+
+            renderNavGrid();
+            lucide.createIcons();
+        }
+
+        // Pilih Opsi Jawaban
+        function selectOption(optIdx) {
+            userAnswers[currentQuestionIndex] = optIdx;
+            const isCorrect = optIdx === quizData[currentQuestionIndex].correct;
+            playSound(isCorrect ? 'correct' : 'wrong');
+            renderQuestion(currentQuestionIndex);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                playSound('click');
+                renderQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.length - 1) {
+                playSound('click');
+                renderQuestion(currentQuestionIndex + 1);
+            } else {
+                finishQuiz();
+            }
+        }
+
+        // Selesaikan Kuis & Tampilkan Hasil
+        function finishQuiz() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            if (unanswered > 0) {
+                showToast(`Masih ada ${unanswered} soal yang belum dijawab. Silakan periksa Peta Soal.`, "warning");
+                document.getElementById('nav-grid-container').classList.remove('hidden');
+                return;
+            }
+
+            playSound('finish');
+
+            // Hitung Skor
+            let correctCount = 0;
+            userAnswers.forEach((ans, idx) => {
+                if (ans === quizData[idx].correct) correctCount++;
+            });
+
+            const wrongCount = quizData.length - correctCount;
+            const score = Math.round((correctCount / quizData.length) * 100);
+
+            // Tentukan Predikat & Pesan Apresiasi
+            let predicate = "";
+            let appreciationMsg = "";
+
+            if (score >= 90) {
+                predicate = "Visioner & Pemimpin Strategis Unggul";
+                appreciationMsg = `Luar biasa, ${userData.name}! Anda menguasai secara komprehensif filosofi spiral dan 10 tahapan Strategi Mosquito Coil. Pemahaman mendalam ini menjadi modal kuat untuk menggerakkan transformasi budaya sekolah dan kualitas pembelajaran secara berkelanjutan.`;
+            } else if (score >= 75) {
+                predicate = "Pemimpin Adaptif & Kolaboratif";
+                appreciationMsg = `Selamat, ${userData.name}! Anda memiliki pemahaman yang sangat baik mengenai kepemimpinan strategis berbasis data, supervisi pembinaan, dan kolaborasi warga sekolah. Terus pertajam siklus refleksi untuk membawa sekolah menuju mutu yang semakin prima.`;
+            } else if (score >= 60) {
+                predicate = "Penggerak Perubahan Berkembang";
+                appreciationMsg = `Terima kasih atas partisipasi aktif Anda, ${userData.name}. Anda telah memahami kerangka dasar kepemimpinan spiral. Luangkan waktu meninjau kembali beberapa tahapan pada pembahasan di bawah untuk memperkuat implementasi di satuan pendidikan Anda.`;
+            } else {
+                predicate = "Pembelajar Kepemimpinan Reflektif";
+                appreciationMsg = `Apresiasi atas semangat belajar Anda, ${userData.name}! Seperti filosofi obat nyamuk spiral yang bergerak bertahap dan terus memperbaiki diri, Anda dapat mengkaji ulang tinjauan jawaban di bawah dan mencoba kembali kuis ini untuk memperdalam penguasaan materi.`;
+            }
+
+            // Populate Halaman Hasil
+            document.getElementById('res-predicate').textContent = predicate;
+            document.getElementById('res-name').textContent = userData.name;
+            document.getElementById('res-school-role').textContent = `${userData.role} • ${userData.school}`;
+            document.getElementById('res-score').textContent = score;
+            document.getElementById('res-correct').textContent = correctCount;
+            document.getElementById('res-wrong').textContent = wrongCount;
+            document.getElementById('res-appreciation-msg').textContent = appreciationMsg;
+
+            renderReviewList();
+
+            // Pindah Halaman
+            document.getElementById('page-quiz').classList.add('hidden');
+            document.getElementById('page-result').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Daftar Tinjauan Jawaban
+        function renderReviewList() {
+            const list = document.getElementById('review-list');
+            const letters = ['A', 'B', 'C', 'D'];
+            list.innerHTML = '';
+
+            quizData.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correct;
+
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-2xl border text-sm space-y-2 ${isCorrect ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'}`;
+                item.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="font-bold text-slate-900">${idx + 1}. ${q.question}</p>
+                        <span class="px-2 py-0.5 rounded-md text-xs font-bold shrink-0 ${isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${isCorrect ? 'Benar' : 'Kurang Tepat'}
+                        </span>
+                    </div>
+                    <div class="text-xs space-y-1 text-slate-700">
+                        <p>Jawaban Anda: <strong>${letters[userAns]}. ${q.options[userAns]}</strong></p>
+                        ${!isCorrect ? `<p class="text-emerald-800">Kunci Jawaban: <strong>${letters[q.correct]}. ${q.options[q.correct]}</strong></p>` : ''}
+                        <p class="text-slate-500 pt-1 italic">${q.explanation}</p>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function toggleReviewList() {
+            const list = document.getElementById('review-list');
+            const btn = document.getElementById('btn-toggle-review');
+            const isHidden = list.classList.contains('hidden');
+            
+            if (isHidden) {
+                list.classList.remove('hidden');
+                btn.innerHTML = `<span>Sembunyikan Detail</span><i data-lucide="chevron-up" class="w-4 h-4"></i>`;
+            } else {
+                list.classList.add('hidden');
+                btn.innerHTML = `<span>Tampilkan Detail</span><i data-lucide="chevron-down" class="w-4 h-4"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        // Salin Ringkasan Hasil & Refleksi ke Clipboard
+        function copyReflectionSummary() {
+            const score = document.getElementById('res-score').textContent;
+            const correct = document.getElementById('res-correct').textContent;
+            const predicate = document.getElementById('res-predicate').textContent;
+            const stage = document.getElementById('ref-stage').value;
+            const strength = document.getElementById('ref-strength').value.trim() || "-";
+            const action = document.getElementById('ref-action').value.trim() || "-";
+
+            const summaryText = 
+`HASIL KUIS & REFLEKSI STRATEGI KEPEMIMPINAN MOSQUITO COIL
+==========================================================
+Nama     : ${userData.name}
+Jabatan  : ${userData.role}
+Sekolah  : ${userData.school}
+Skor     : ${score}/100 (${correct} dari 20 soal benar)
+Predikat : ${predicate}
+
+LEMBAR REFLEKSI KEPEMIMPINAN:
+1. Tahapan Prioritas Mendesak:
+   ${stage}
+2. Praktik Baik / Kekuatan Sekolah:
+   ${strength}
+3. Komitmen Rencana Aksi (3 Bulan Ke Depan):
+   ${action}
+==========================================================`;
+
+            const tempTextarea = document.createElement("textarea");
+            tempTextarea.value = summaryText;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            try {
+                document.execCommand("copy");
+                showToast("Ringkasan hasil & refleksi berhasil disalin ke clipboard!", "success");
+            } catch (err) {
+                showToast("Gagal menyalin teks. Silakan gunakan tombol Cetak / PDF.", "warning");
+            }
+            document.body.removeChild(tempTextarea);
+        }
+
+        // Ulangi Kuis
+        function restartQuiz() {
+            playSound('click');
+            userAnswers = new Array(quizData.length).fill(null);
+            currentQuestionIndex = 0;
+            
+            document.getElementById('page-result').classList.add('hidden');
+            document.getElementById('page-quiz').classList.remove('hidden');
+            document.getElementById('review-list').classList.add('hidden');
+            
+            renderQuestion(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
